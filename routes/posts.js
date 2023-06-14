@@ -83,7 +83,7 @@ router.delete('/posts/:_postId', async (req, res) => {
 
   if (results.length) {
     if (post.password === password) {
-      await Post.deleteOne({ _postId });
+      await Post.deleteOne({ PostId: _postId });
     } else {
       return res
         .status(400)

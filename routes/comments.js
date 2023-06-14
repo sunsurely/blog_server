@@ -62,7 +62,7 @@ router.put('/comments/:_commentId', async (req, res) => {
       .json({ sucess: false, errorMessage: '비밀번호가 일치하지 않습니다' });
   }
 });
-
+//
 router.delete('/comments/:_commentId', async (req, res) => {
   const { _commentId } = req.params;
   const { password } = req.body;

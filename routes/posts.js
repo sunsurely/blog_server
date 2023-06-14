@@ -57,10 +57,7 @@ router.put('/posts/:_postId', async (req, res) => {
     if (post.password === password) {
       await Post.updateOne({ postId: _postId }, { user, title, content });
     } else {
-      res.status(400).json({
-        success: false,
-        errorMessage: '비밀번호가 일치하지 않습니다.',
-      });
+      res.send('비밀번호가 일치하지 않습니다');
     }
   } else {
     return res.status(400).json({
@@ -71,4 +68,28 @@ router.put('/posts/:_postId', async (req, res) => {
 
   res.send('success');
 });
+
+router.delete('/posts/:_postId', async (req, res) => {
+  const { _postId } = req.params;
+  const { password } = req.body;
+  const results = await Post.find({ postId: _postId });
+  const post = results[0];
+
+  if (results.length) {
+    if (post.password === password) {
+      await Post.deleteOne({ _postId });
+    } else {
+      return res
+        .status(400)
+        .json({ sucess: false, errorMessage: '비밀번호가 일치하지 않습니다' });
+    }
+  } else {
+    return res
+      .status(400)
+      .json({ sucess: false, errorMessage: '게시물 조회에 실패했습니다.' });
+  }
+
+  res.send('게시물을 삭제했습니다.');
+});
+
 module.exports = router;

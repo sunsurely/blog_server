@@ -22,7 +22,7 @@ router.post('/posts', async (req, res) => {
   };
 
   await Post.create(data);
-  res.json({ mrddshr: '게시글을 생셩하였습니다.' });
+  res.json({ message: '게시글을 생성하였습니다.' });
 });
 
 router.get('/posts', async (req, res) => {
@@ -56,46 +56,46 @@ router.get('/posts/:_postId', async (req, res) => {
 
 router.put('/posts/:_postId', async (req, res) => {
   const { _postId } = req.params;
-  const { password, user, title, content } = req.body;
+  const { password, title, content } = req.body;
   const results = await Post.find({ postId: _postId });
-  if (results.length) {
-    const post = results[0];
-    if (post.password === password) {
-      await Post.updateOne({ postId: _postId }, { user, title, content });
-    } else {
-      res.send('비밀번호가 일치하지 않습니다');
-    }
-  } else {
-    return res.status(400).json({
-      success: false,
-      errorMessage: '게시물 조회에 실패했습니다.',
-    });
+
+  if (results.length === 0) {
+    return res
+      .status(400)
+      .json({ success: false, errorMessage: '게시물 조회에 실패했습니다.' });
   }
 
-  res.send('success');
+  const post = results[0];
+  if (post.password === password) {
+    await Post.updateOne({ postId: _postId }, { title, content });
+    return res.status(200).send('게시물을 수정했습니다.');
+  } else {
+    return res
+      .status(400)
+      .json({ success: false, errorMessage: '비밀번호가 일치하지 않습니다.' });
+  }
 });
 
 router.delete('/posts/:_postId', async (req, res) => {
   const { _postId } = req.params;
   const { password } = req.body;
   const results = await Post.find({ postId: _postId });
-  const post = results[0];
 
-  if (results.length) {
-    if (post.password === password) {
-      await Post.deleteOne({ PostId: _postId });
-    } else {
-      return res
-        .status(400)
-        .json({ sucess: false, errorMessage: '비밀번호가 일치하지 않습니다' });
-    }
-  } else {
+  if (results.length === 0) {
     return res
       .status(400)
       .json({ sucess: false, errorMessage: '게시물 조회에 실패했습니다.' });
   }
 
-  res.send('게시물을 삭제했습니다.');
+  const post = results[0];
+  if (post.password === password) {
+    await Post.deleteOne({ postId: _postId });
+    return res.status(200).send('게시물을 삭제했습니다.');
+  } else {
+    return res
+      .status(400)
+      .json({ sucess: false, errorMessage: '비밀번호가 일치하지 않습니다' });
+  }
 });
 
 module.exports = router;

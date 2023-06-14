@@ -34,7 +34,7 @@ router.get('/comments/:_postId', async (req, res) => {
   if (results.length) {
     res.json({ data: results });
   } else {
-    res
+    return res
       .status(400)
       .json({ success: false, errorMessage: '게시물 조회에 실패했습니다.' });
   }
@@ -46,29 +46,21 @@ router.put('/comments/:_commentId', async (req, res) => {
   const { _commentId } = req.params;
   const { password, content } = req.body;
   const results = await Comment.find({ commentId: _commentId });
+  if (results.length === 0) {
+    return res
+      .status(400)
+      .json({ success: false, errorMessage: '댓글 조회에 실패했습니다.' });
+  }
 
-  if (results) {
-    if (!content) {
-      return res
-        .status(400)
-        .json({ success: false, errorMessage: '내용을 입력해 주세요' });
-    }
-    const result = results[0];
-    if (result.password === password) {
-      await Comment.updateOne({ commentId: _commentId }, { content });
-    } else {
-      return res.status(400).json({
-        success: false,
-        errorMessage: '비밀번호가 일치하지 않습니다.',
-      });
-    }
+  const comment = results[0];
+  if (comment.password === password) {
+    await Comment.updateOne({ commentId: _commentId }, { content });
+    return res.status(200).send('댓글을 수정하였습니다.');
   } else {
     return res
       .status(400)
-      .json({ success: false, errorMessage: '게시물이 존재하지 않습니다.' });
+      .json({ sucess: false, errorMessage: '비밀번호가 일치하지 않습니다' });
   }
-
-  res.send('수정했습니다');
 });
 
 router.delete('/comments/:_commentId', async (req, res) => {
@@ -76,7 +68,7 @@ router.delete('/comments/:_commentId', async (req, res) => {
   const { password } = req.body;
   const results = await Comment.find({ commentId: _commentId });
   if (!_commentId) {
-    res.status(400).json({
+    return res.status(400).json({
       success: false,
       errorMessage: '데이터 형식이 올바르지 않습니다.',
     });

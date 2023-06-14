@@ -20,7 +20,15 @@ router.post('/posts', async (req, res) => {
 });
 
 router.get('/posts', async (req, res) => {
-  const data = await Post.find({});
+  const results = await Post.find({});
+  const data = results.map((item) => {
+    return {
+      postId: item.postId,
+      user: item.user,
+      title: item.title,
+      createdAt: item.createdAt,
+    };
+  });
   res.json({ data });
 });
 

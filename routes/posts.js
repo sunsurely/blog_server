@@ -3,9 +3,15 @@ const mongoose = require('mongoose');
 const router = express.Router();
 
 const Post = require('../schemas/posts.js');
+
 router.post('/posts', async (req, res) => {
   const { user, password, title, content } = req.body;
-
+  const results = await Post.find({ user });
+  if (results.length) {
+    return res
+      .status(400)
+      .json({ sucess: false, errorMessage: '이미 존재하는 데이터입니다.' });
+  }
   const data = {
     postId: new mongoose.Types.ObjectId(),
     user: user,
@@ -16,7 +22,7 @@ router.post('/posts', async (req, res) => {
   };
 
   await Post.create(data);
-  res.json({ results: 'success' });
+  res.json({ mrddshr: '게시글을 생셩하였습니다.' });
 });
 
 router.get('/posts', async (req, res) => {

@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const commentSchma = new mongoose.Schema({
+  postId: {
+    type: mongoose.Schema.Types.ObjectId,
+    require: true,
+  },
   commentId: {
     type: mongoose.Schema.Types.ObjectId,
     require: true,

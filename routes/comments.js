@@ -41,4 +41,33 @@ router.get('/comments/:_postId', async (req, res) => {
 
   res.send({ success: 'true' });
 });
+
+router.put('/comments/:_commentId', async (req, res) => {
+  const { _commentId } = req.params;
+  const { password, content } = req.body;
+  const results = await Comment.find({ commentId: _commentId });
+
+  if (results) {
+    if (!content) {
+      return res
+        .status(400)
+        .json({ success: false, errorMessage: '내용을 입력해 주세요' });
+    }
+    const result = results[0];
+    if (result.password === password) {
+      await Comment.updateOne({ commentId: _commentId }, { content });
+    } else {
+      return res.status(400).json({
+        success: false,
+        errorMessage: '비밀번호가 일치하지 않습니다.',
+      });
+    }
+  } else {
+    return res
+      .status(400)
+      .json({ success: false, errorMessage: '게시물이 존재하지 않습니다.' });
+  }
+
+  res.send('수정했습니다');
+});
 module.exports = router;

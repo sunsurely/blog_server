@@ -1,10 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const router = express.Router();
-
 const Post = require('../schemas/posts.js');
 
-router.post('/posts', async (req, res) => {
+router.post('/', async (req, res) => {
   const { user, password, title, content } = req.body;
   const results = await Post.find({ user });
   if (results.length) {
@@ -18,18 +17,17 @@ router.post('/posts', async (req, res) => {
     password: password,
     content: content,
     title: title,
-    createdAt: new Date(),
   };
 
   await Post.create(data);
   res.json({ message: '게시글을 생성하였습니다.' });
 });
 
-router.get('/posts', async (req, res) => {
-  const results = await Post.find({});
+router.get('/', async (req, res) => {
+  const results = await Post.find({}).sort({ createdAt: -1 });
   const data = results.map((item) => {
     return {
-      postId: item.postId,
+      postId: item._id,
       user: item.user,
       title: item.title,
       createdAt: item.createdAt,
@@ -38,12 +36,12 @@ router.get('/posts', async (req, res) => {
   res.json({ data });
 });
 
-router.get('/posts/:_postId', async (req, res) => {
+router.get('/:_postId', async (req, res) => {
   const { _postId } = req.params;
-  const results = await Post.find({ postId: _postId });
+  const results = await Post.find({ _id: _postId }).sort({ createdAt: -1 });
   const data = results.map((item) => {
     return {
-      postId: item.postId,
+      postId: item._id,
       user: item.user,
       title: item.title,
       content: item.content,
@@ -54,10 +52,10 @@ router.get('/posts/:_postId', async (req, res) => {
   res.json({ data });
 });
 
-router.put('/posts/:_postId', async (req, res) => {
+router.put('/:_postId', async (req, res) => {
   const { _postId } = req.params;
   const { password, title, content } = req.body;
-  const results = await Post.find({ postId: _postId });
+  const results = await Post.find({ _id: _postId });
 
   if (results.length === 0) {
     return res
@@ -67,7 +65,7 @@ router.put('/posts/:_postId', async (req, res) => {
 
   const post = results[0];
   if (post.password === password) {
-    await Post.updateOne({ postId: _postId }, { title, content });
+    await Post.updateOne({ _id: _postId }, { title, content });
     return res.status(200).send('게시물을 수정했습니다.');
   } else {
     return res
@@ -76,10 +74,10 @@ router.put('/posts/:_postId', async (req, res) => {
   }
 });
 
-router.delete('/posts/:_postId', async (req, res) => {
+router.delete('/:_postId', async (req, res) => {
   const { _postId } = req.params;
   const { password } = req.body;
-  const results = await Post.find({ postId: _postId });
+  const results = await Post.find({ _id: _postId });
 
   if (results.length === 0) {
     return res
@@ -89,7 +87,7 @@ router.delete('/posts/:_postId', async (req, res) => {
 
   const post = results[0];
   if (post.password === password) {
-    await Post.deleteOne({ postId: _postId });
+    await Post.deleteOne({ _id: _postId });
     return res.status(200).send('게시물을 삭제했습니다.');
   } else {
     return res

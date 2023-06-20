@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const postsRouter = require('./posts');
 const commentsRouter = require('./comments');
+const signupRouter = require('./signup');
+const loginRouter = require('./login');
 
 const defaultRoutes = [
   {
@@ -11,6 +13,14 @@ const defaultRoutes = [
   {
     path: '/comments',
     route: commentsRouter,
+  },
+  {
+    path: '/signup',
+    route: signupRouter,
+  },
+  {
+    path: '/login',
+    route: loginRouter,
   },
 ];
 

@@ -7,12 +7,12 @@ const port = 3000;
 
 connect();
 
-app.get('/app', (req, res) => {
+app.get('/api', (req, res) => {
   res.send('환영합니다!');
 });
 
 app.use(express.json());
-app.use('/app', routes);
+app.use('/api', routes);
 
 app.listen(port, () => {
   console.log(port, '포트로 서버가 열렸습니다!');

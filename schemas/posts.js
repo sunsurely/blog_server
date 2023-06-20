@@ -2,15 +2,15 @@ const mongoose = require('mongoose');
 
 const postsSchema = new mongoose.Schema(
   {
-    password: {
-      type: Number,
-      required: true,
-    },
-    user: {
+    userId: {
       type: String,
       require: true,
     },
     title: {
+      type: String,
+      require: true,
+    },
+    nickname: {
       type: String,
       require: true,
     },
@@ -24,5 +24,13 @@ const postsSchema = new mongoose.Schema(
     versionKey: false,
   },
 );
+
+postsSchema.virtual('postId').get(function () {
+  return this._id.toHexString();
+});
+
+postsSchema.set('toJson', {
+  virtual: true,
+});
 
 module.exports = mongoose.model('Posts', postsSchema);

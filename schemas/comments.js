@@ -1,20 +1,21 @@
 const mongoose = require('mongoose');
 
-const commentSchma = new mongoose.Schema(
+const commentScehma = new mongoose.Schema(
   {
     postId: {
-      type: mongoose.Schema.Types.ObjectId,
-      require: true,
-    },
-    user: {
       type: String,
       require: true,
     },
-    content: {
+    userId: {
       type: String,
+      require: true,
     },
-    password: {
-      type: Number,
+    comment: {
+      type: String,
+      require: true,
+    },
+    nickname: {
+      type: String,
       require: true,
     },
   },
@@ -24,4 +25,12 @@ const commentSchma = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model('Comments', commentSchma);
+commentScehma.virtual('commentId').get(function () {
+  return this._id.toHexString();
+});
+
+commentScehma.set('toJson', {
+  virtual: true,
+});
+
+module.exports = mongoose.model('Comments', commentScehma);

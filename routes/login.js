@@ -14,8 +14,8 @@ router.post('/', async (req, res) => {
       .json({ errorMessage: '닉네임 또는 패스워드를 확인해주세요' });
   }
 
-  const token = jwt.sign({ userId: user.userId }, 'customized-secret-key');
-  res.cookie('Authorization', `Bearer ${token}`);
+  const token = jwt.sign({ userId: user.userId }, 'costomized-secret-key');
+  res.cookie('authorization', `Bearer ${token}`);
   res.status(200).json({ token });
 });
 

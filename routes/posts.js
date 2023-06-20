@@ -1,22 +1,19 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const router = express.Router();
-const Post = require('../schemas/posts.js');
+const Post = require('../schemas/posts');
+const Signup = require('../schemas/signup');
+const loginMiddleware = require('../middlewares/login-middleware.js');
 
-router.post('/', async (req, res) => {
-  const { user, password, title, content } = req.body;
-  const results = await Post.find({ user });
-  if (results.length) {
-    return res
-      .status(400)
-      .json({ sucess: false, errorMessage: '이미 존재하는 데이터입니다.' });
-  }
+router.post('/', loginMiddleware, async (req, res) => {
+  const { userId } = res.locals.user;
+  const { title, content } = req.body;
+  const user = await Signup.findById(userId);
+
   const data = {
-    postId: new mongoose.Types.ObjectId(),
-    user: user,
-    password: password,
-    content: content,
-    title: title,
+    nickname: user.nickname,
+    userId,
+    content,
+    title,
   };
 
   await Post.create(data);
@@ -28,72 +25,66 @@ router.get('/', async (req, res) => {
   const data = results.map((item) => {
     return {
       postId: item._id,
-      user: item.user,
+      userId: item.userId,
+      nickname: item.nickname,
+      content: item.content,
       title: item.title,
       createdAt: item.createdAt,
+      updateAt: item.updateAt,
     };
   });
   res.json({ data });
 });
 
-router.get('/:_postId', async (req, res) => {
-  const { _postId } = req.params;
-  const results = await Post.find({ _id: _postId }).sort({ createdAt: -1 });
-  const data = results.map((item) => {
-    return {
-      postId: item._id,
-      user: item.user,
-      title: item.title,
-      content: item.content,
-      creataAt: item.createdAt,
-    };
-  });
+router.get('/:postId', async (req, res) => {
+  const { postId } = req.params;
+  const post = await Post.findById(postId);
+  const data = {
+    postId,
+    userId: post.userId,
+    title: post.title,
+    nickname: post.nickname,
+    content: post.content,
+    creataAt: post.createdAt,
+    updateAt: post.updateAt,
+  };
 
-  res.json({ data });
+  res.status(200).json({ data });
 });
 
-router.put('/:_postId', async (req, res) => {
-  const { _postId } = req.params;
-  const { password, title, content } = req.body;
-  const results = await Post.find({ _id: _postId });
+router.put('/:postId', loginMiddleware, async (req, res) => {
+  const { userId } = res.locals.user;
+  const { postId } = req.params;
+  const { title, content } = req.body;
 
-  if (results.length === 0) {
+  const post = await Post.findOne({ $and: [{ userId }, { _id: postId }] });
+
+  if (!post) {
     return res
       .status(400)
-      .json({ success: false, errorMessage: '게시물 조회에 실패했습니다.' });
+      .json({ errorMessage: '게시물을 수정할 수 없습니다.' });
   }
 
-  const post = results[0];
-  if (post.password === password) {
-    await Post.updateOne({ _id: _postId }, { title, content });
-    return res.status(200).send('게시물을 수정했습니다.');
-  } else {
-    return res
-      .status(400)
-      .json({ success: false, errorMessage: '비밀번호가 일치하지 않습니다.' });
-  }
+  await Post.updateOne({ userId, _id: postId }, { $set: { title, content } });
+
+  res.status(201).json({ message: '게시물을 수정했습니다.' });
 });
 
-router.delete('/:_postId', async (req, res) => {
-  const { _postId } = req.params;
+router.delete('/:postId', loginMiddleware, async (req, res) => {
+  const { userId } = res.locals.user;
+  const { postId } = req.params;
   const { password } = req.body;
-  const results = await Post.find({ _id: _postId });
+  const post = await Post.findOne({ $and: [{ _id: postId }, { userId }] });
 
-  if (results.length === 0) {
-    return res
-      .status(400)
-      .json({ sucess: false, errorMessage: '게시물 조회에 실패했습니다.' });
+  if (!post) {
+    return res.status(400).json({
+      sucess: false,
+      errorMessage: '게시글의 삭제 권한이 존재하지 않습니다.',
+    });
   }
 
-  const post = results[0];
-  if (post.password === password) {
-    await Post.deleteOne({ _id: _postId });
-    return res.status(200).send('게시물을 삭제했습니다.');
-  } else {
-    return res
-      .status(400)
-      .json({ sucess: false, errorMessage: '비밀번호가 일치하지 않습니다' });
-  }
+  await Post.deleteOne({ _id: postId });
+  res.status(200).json({ message: '게시물을 삭제했습니다.' });
 });
 
 module.exports = router;

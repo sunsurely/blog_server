@@ -17,7 +17,7 @@ router.post('/', loginMiddleware, async (req, res) => {
   };
 
   await Post.create(data);
-  res.json({ message: '게시글을 생성하였습니다.' });
+  res.status(201).json({ message: '게시글을 생성하였습니다.' });
 });
 
 router.get('/', async (req, res) => {
@@ -73,7 +73,6 @@ router.put('/:postId', loginMiddleware, async (req, res) => {
 router.delete('/:postId', loginMiddleware, async (req, res) => {
   const { userId } = res.locals.user;
   const { postId } = req.params;
-  const { password } = req.body;
   const post = await Post.findOne({ $and: [{ _id: postId }, { userId }] });
 
   if (!post) {
